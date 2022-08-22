@@ -14,6 +14,12 @@ const Menu = ({location}) => {
       <MenuAntd.Item key='/users'>
         <Link to="/users">Users</Link>
       </MenuAntd.Item>
+      <MenuAntd.Item key='/createUser'>
+        <Link to="/createUser">Create User</Link>
+      </MenuAntd.Item>
+      <MenuAntd.Item key='/posts'>
+        <Link to="/posts">Posts</Link>
+      </MenuAntd.Item>
     </MenuAntd>
   )
 }

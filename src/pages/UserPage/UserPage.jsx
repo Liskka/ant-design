@@ -1,48 +1,91 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
+import axios from '../../axios/index';
+import { withRouter } from 'react-router-dom';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import Card from 'antd/lib/card/Card';
-import { EditOutlined } from '@ant-design/icons';
+import { EditOutlined, WarningOutlined } from '@ant-design/icons';
+import { Button, Spin, notification } from 'antd';
 
-const UserPage = () => {
+const UserPage = ({location, history, match: {params}}) => {
 
   const [user, setUser] = useState({});
-
-  const params = useParams();
-  console.log(params.id);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetchUser();
   }, []);
 
   const fetchUser = async () => {
-    const userInfo = await axios.get(`https://gorest.co.in/public/v1/users/${params.id}`);
-    setUser(userInfo.data.data);
+    try {
+      setIsLoading(true);
+      const userInfo = await axios.get(`https://gorest.co.in/public/v1/users/${params.id}`);
+      setUser(userInfo.data.data);
+    } catch (error) {
+      openNotification(error.message);
+      history.push('/users')
+    } finally {
+      setIsLoading(false);
+    }
   }
-  // console.log('user = ', user)
+  const openNotification = (errText) => {
+    notification.open({
+      message: 'User with this id does not exist',
+      description: `Request status: failed. ${errText}`,
+      icon: (
+        <WarningOutlined
+          style={{
+            color: 'red',
+          }}
+        />
+      ),
+    });
+  };
+
+  const goToEditing = () => {
+    history.push(location.pathname + '/edit');
+  }
 
   return (
     <PageTemplate>
-      <Card
-        title={`User: ${user.name}`}
-        extra={<a href="#"><EditOutlined style={{fontSize: 30}} /></a>}
-        headStyle={{fontSize: 20}}
-        style={{
-          width: 500,
-        }}
-      >
-        {
-          Object.entries(user).map(user => {
-            return <p key={user[0]}><b>{(user[0])}:</b> {user[1]}</p>
-          })
-        }
-        {/* <p>Card content</p>
-        <p>Card content</p>
-        <p>Card content</p> */}
-      </Card>
+      {
+        isLoading 
+          ? <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              padding: '50px',
+            }}>
+              <Spin size="large" />
+            </div>
+          : 
+            <>{
+              !!Object.keys(user).length &&
+                <Card
+                  title={`User: ${user.name}`}
+                  extra={
+                    <Button 
+                      type="primary" 
+                      icon={<EditOutlined />} 
+                      size="large" 
+                      onClick={goToEditing}
+                    >
+                      Edit
+                    </Button>
+                  }
+                  headStyle={{fontSize: 20}}
+                  style={{
+                    width: 500,
+                  }}
+                >
+                  {
+                    Object.entries(user).map(user => {
+                      return <p key={user[0]}><b>{(user[0])}:</b> {user[1]}</p>
+                    })
+                  }
+                </Card>
+            }</>
+      }
     </PageTemplate>
   )
 }
 
-export default UserPage
+export default withRouter(UserPage)
