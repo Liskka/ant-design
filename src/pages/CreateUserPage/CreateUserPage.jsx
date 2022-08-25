@@ -39,7 +39,7 @@ const CreateUserPage = () => {
   return (
     <PageTemplate>
 
-      <Typography.Title>CreateUserPage</Typography.Title>
+      <Typography.Title>Create User Page</Typography.Title>
 
       <Form 
         form={form}  

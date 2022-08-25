@@ -1,79 +1,88 @@
-import { Card, Pagination, Space, Spin, Typography } from 'antd';
+import { Avatar, Card, Tooltip } from 'antd';
+import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import axios from '../../axios/index';
+import { withRouter } from 'react-router-dom';
+import Loader from '../../components/Loader/Loader';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 
-const PostPage = () => {
+const PostPage = ({ match: { params }, location, history }) => {
+  // console.log('match ', match)
+  // console.log('location ', location)
+  // console.log('history ', history)
 
-  const [posts, setPosts] = useState([]);
+  const [post, setPost] = useState({});
+  const [author, setAuthor] = useState({});
+  const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [pagination, setPagination] = useState({});
 
   useEffect(() => {
-    fetchPosts();
+    fetchPost(params.id);
   }, []);
 
-  const fetchPosts = async (page = 1) => {
+  const fetchPost = async (postId) => {
     setIsLoading(true);
-    const response = await axios.get(`https://gorest.co.in/public/v1/posts?page=${page}`);
-    setPosts(response.data.data);
-    setPagination(response.data.meta.pagination)
+    const response = await axios.get(
+      `https://gorest.co.in/public/v1/posts/${postId}`
+    );
+    setPost(response.data.data);
+    const responseAuthor = await axios.get(
+      `https://gorest.co.in/public/v1/users/${response.data.data.user_id}`
+    );
+    setAuthor(responseAuthor.data.data);
+    const responseComments = await axios.get(
+      `https://gorest.co.in/public/v1/comments?post_id=${postId}`
+    );
+    setComments(responseComments.data.data);
     setIsLoading(false);
-  }
-  console.log(pagination)
-  // console.log(posts);
+  };
 
-  const selectPage = (page) => {
-    fetchPosts(page);
-  }
+  // console.log(post)
+  // console.log(author)
+  // console.log(comments)
 
   return (
     <PageTemplate>
-      <Typography.Title>PostPage</Typography.Title>
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <>
+          <Card
+            title={post.title}
+            extra={
+              <Tooltip title={author.name} placement="left">
+                <Avatar size={50}>
+                  {author.name && author.name.split(' ')[0]}
+                </Avatar>
+              </Tooltip>
+            }
+            headStyle={{ fontSize: '25px' }}
+            bodyStyle={{ fontSize: '20px' }}
+            style={{ boxShadow: '5px 5px 7px gray' }}
+          >
+            <p>{post.body}</p>
+          </Card>
 
-      {
-        isLoading
-        ? <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '50px',
-          }}><Spin size="large" /></div>
-        : <>
-            <Space
-              direction="vertical"
-              size="middle"
-              style={{
-                display: 'flex',
-              }}
-            >
-              {posts.map(post => (
-                <CardComment key={post.id} cardInfo={post} />
-              ))}
-            </Space>
-            <Pagination 
-              // defaultCurrent={1} 
-              current={pagination.page}
-              total={pagination.total} 
-              showSizeChanger={false} 
-              pageSize={10} 
-              onChange={(page, pageSize) => selectPage(page)}
-              style={{display: 'flex', justifyContent: 'center', margin: '30px auto 0'}}
-            />
-          </>
-      }
+          {comments.map((comment) => (
+            <Comment key={comment.id} {...comment} />
+          ))}
+        </>
+      )}
     </PageTemplate>
-  )
-}
+  );
+};
 
-export default PostPage
+export default withRouter(PostPage);
 
-const CardComment = ({cardInfo}) => {
+const Comment = ({ body, id, email, name }) => {
   return (
-    <Card 
-      title={cardInfo.title} 
-      style={{boxShadow: '5px 5px 7px gray'}}
+    <Card
+      title={name}
+      style={{
+        width: '60%',
+        margin: '30px auto',
+      }}
     >
-      <p>{cardInfo.body}</p>
+      <p>{body}</p>
     </Card>
-  )
-}
+  );
+};

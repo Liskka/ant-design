@@ -1,32 +1,35 @@
-import React, { useEffect, useState } from 'react'
-import { Spin, Typography } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Typography } from 'antd';
 import { Table } from 'antd';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
 import axios from '../../axios/index';
 import { withRouter } from 'react-router-dom';
+import Loader from '../../components/Loader/Loader';
 
-const UsersPage = ({match, location, history}) => {
-
+const UsersPage = ({ match, location, history }) => {
   const usersURL = 'https://gorest.co.in/public/v1/users';
-    const [users, setUsers] = useState([]);
-    const [paginationInfo, setPaginationInfo] = useState([]);
-    const [page, setPage] = useState(1);
-    const [isLoading, setIsLoading] = useState(false);
+  const [users, setUsers] = useState([]);
+  const [paginationInfo, setPaginationInfo] = useState([]);
+  const [page, setPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
 
-    useEffect(() => {
-        fetchUsers(page);
-    }, [page]);
+  useEffect(() => {
+    fetchUsers(page);
+  }, [page]);
 
-    const fetchUsers = async (page) => {
-        setIsLoading(true);
-        const allUsers = await axios.get(usersURL + `${page !== 1 ? `?page=${page}` : ''}`);
-        setUsers(allUsers.data.data);
-        setPaginationInfo(allUsers.data.meta.pagination);
-        setIsLoading(false);
-    };
+  const fetchUsers = async (page) => {
+    setIsLoading(true);
+    const allUsers = await axios.get(
+      usersURL + `${page !== 1 ? `?page=${page}` : ''}`
+    );
+    setUsers(allUsers.data.data);
+    setPaginationInfo(allUsers.data.meta.pagination);
+    setIsLoading(false);
+  };
 
-  const usersKey = users.map(user => ({
-    ...user, key: user.id
+  const usersKey = users.map((user) => ({
+    ...user,
+    key: user.id,
   }));
 
   const columns = [
@@ -49,7 +52,7 @@ const UsersPage = ({match, location, history}) => {
         {
           text: 'female',
           value: 'female',
-        }
+        },
       ],
       onFilter: (value, record) => record.gender.indexOf(value) === 0,
     },
@@ -64,10 +67,10 @@ const UsersPage = ({match, location, history}) => {
         {
           text: 'inactive',
           value: 'inactive',
-        }
+        },
       ],
       onFilter: (value, record) => record.status.indexOf(value) === 0,
-    }
+    },
   ];
 
   const pagination = {
@@ -76,36 +79,40 @@ const UsersPage = ({match, location, history}) => {
     defaultPageSize: paginationInfo.limit,
     position: ['bottomCenter'],
     showSizeChanger: false,
-  }
-
+  };
 
   const onChange = (pagination, filters, sorter, extra) => {
     // console.log('params', pagination, filters, sorter, extra);
     setPage(pagination.current);
+    // history.push({
+    //   pathname: location.pathname,
+    //   search: `page=${pagination.current}`,
+    // });
   };
 
   const sumbitRow = (record, rowIndex) => {
     return {
-      onClick: () => history.push(match.path + `/${record.id}`)
-    }
-  }
+      onClick: () => history.push(match.path + `/${record.id}`),
+    };
+  };
 
   return (
     <PageTemplate>
-      <Typography.Title>UsersPage</Typography.Title>
+      <Typography.Title>Users Page</Typography.Title>
 
-      {
-        isLoading
-        ? <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '50px',
-          }}><Spin size="large" /></div>
-        : <Table columns={columns} dataSource={usersKey} onChange={onChange} pagination={pagination} onRow={sumbitRow} />
-      }
-
+      {isLoading ? (
+        <Loader />
+      ) : (
+        <Table
+          columns={columns}
+          dataSource={usersKey}
+          onChange={onChange}
+          pagination={pagination}
+          onRow={sumbitRow}
+        />
+      )}
     </PageTemplate>
-  )
-}
+  );
+};
 
-export default withRouter(UsersPage)
+export default withRouter(UsersPage);

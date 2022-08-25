@@ -1,9 +1,10 @@
-import { Button, Form, Input, Select, Typography, notification, Spin } from 'antd';
+import { Button, Form, Input, Select, Typography, notification } from 'antd';
 import axios from '../../axios/index';
 import React, { useEffect, useState } from 'react'
 import { useParams, withRouter } from 'react-router-dom'
 import PageTemplate from '../../components/PageTemplate/PageTemplate'
 import { WarningOutlined } from '@ant-design/icons';
+import Loader from '../../components/Loader/Loader';
 
 const EditUserPage = ({match, location, history}) => {
 
@@ -14,7 +15,8 @@ const EditUserPage = ({match, location, history}) => {
   const [user, setUser] = useState(null);
   const params = useParams();
   const userId = params.id;
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] =
+   useState(false);
   const [form] = Form.useForm();
   // console.log('userId ', userId)
 
@@ -64,11 +66,7 @@ const EditUserPage = ({match, location, history}) => {
 
       {
         isLoading 
-          ? <div style={{
-            display: 'flex',
-            justifyContent: 'center',
-            padding: '50px',
-          }}><Spin size="large" /></div>
+          ? <Loader />
           :
             <Form 
               form={form}  
