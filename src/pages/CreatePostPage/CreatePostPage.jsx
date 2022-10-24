@@ -8,7 +8,7 @@ import {
   Typography,
 } from 'antd';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import userConfig from '../../axios/index';
+import axios from '../../axios/index';
 import { useHistory } from 'react-router-dom';
 import { WarningOutlined } from '@ant-design/icons';
 const { TextArea } = Input;
@@ -18,11 +18,9 @@ const CreatePostPage = () => {
   const [form] = Form.useForm();
 
   const onFinish = async (newPost) => {
+    console.log(newPost);
     try {
-      await userConfig.post(
-        `https://gorest.co.in/public/v1/users/${newPost.user_id}/posts`,
-        newPost
-      );
+      await axios.post(`/users/${newPost.user_id}/posts`, newPost);
       history.push('/posts');
       openNotification();
     } catch (error) {

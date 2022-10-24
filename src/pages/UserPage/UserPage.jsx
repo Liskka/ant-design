@@ -69,7 +69,7 @@ const UserPage = ({ location, history, match: { params } }) => {
               }
               headStyle={{ fontSize: 20 }}
               style={{
-                width: 500,
+                maxWidth: 500,
               }}
             >
               {Object.entries(user).map((user) => {

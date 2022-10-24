@@ -1,9 +1,21 @@
-import { Avatar, Card, Tooltip } from 'antd';
-import axios from 'axios';
+import {
+  Avatar,
+  Button,
+  Card,
+  Form,
+  Input,
+  Modal,
+  notification,
+  Tooltip,
+} from 'antd';
+import axios from '../../axios/index';
 import React, { useEffect, useState } from 'react';
 import { withRouter } from 'react-router-dom';
 import Loader from '../../components/Loader/Loader';
 import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import PostComments from '../../components/PostComments/PostComments';
+import TextArea from 'antd/lib/input/TextArea';
+import { WarningOutlined } from '@ant-design/icons';
 
 const PostPage = ({ match: { params }, location, history }) => {
   // console.log('match ', match)
@@ -12,8 +24,10 @@ const PostPage = ({ match: { params }, location, history }) => {
 
   const [post, setPost] = useState({});
   const [author, setAuthor] = useState({});
-  const [comments, setComments] = useState([]);
+  // const [comments, setComments] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [form] = Form.useForm();
 
   useEffect(() => {
     fetchPost(params.id);
@@ -21,24 +35,54 @@ const PostPage = ({ match: { params }, location, history }) => {
 
   const fetchPost = async (postId) => {
     setIsLoading(true);
-    const response = await axios.get(
-      `https://gorest.co.in/public/v1/posts/${postId}`
-    );
+    const response = await axios.get(`/posts/${postId}`);
     setPost(response.data.data);
     const responseAuthor = await axios.get(
-      `https://gorest.co.in/public/v1/users/${response.data.data.user_id}`
+      `/users/${response.data.data.user_id}`
     );
     setAuthor(responseAuthor.data.data);
-    const responseComments = await axios.get(
-      `https://gorest.co.in/public/v1/comments?post_id=${postId}`
-    );
-    setComments(responseComments.data.data);
     setIsLoading(false);
   };
 
-  // console.log(post)
-  // console.log(author)
-  // console.log(comments)
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const onFinish = async (newPost) => {
+    const finishPost = {
+      id: post.id,
+      user_id: post.user_id,
+      title: newPost.title,
+      body: newPost.body,
+    };
+
+    try {
+      await axios.put(
+        // `/users/${finishPost.user_id}/posts?id=${finishPost.id}`,
+        `/posts/${finishPost.id}`,
+        finishPost
+      );
+      await fetchPost(params.id);
+    } catch (error) {
+      openNotification(error);
+    } finally {
+      setIsModalVisible(false);
+    }
+  };
+
+  const openNotification = (errText) => {
+    notification.open({
+      message: `Error`,
+      description: `Request status: failed. ${errText}`,
+      icon: (
+        <WarningOutlined
+          style={{
+            color: errText ? 'red' : 'green',
+          }}
+        />
+      ),
+    });
+  };
 
   return (
     <PageTemplate>
@@ -60,11 +104,61 @@ const PostPage = ({ match: { params }, location, history }) => {
             style={{ boxShadow: '5px 5px 7px gray' }}
           >
             <p>{post.body}</p>
+            <Button
+              type="primary"
+              style={{ right: '10px' }}
+              onClick={() => showModal()}
+            >
+              Edit
+            </Button>
+            <Modal
+              title="Edit post"
+              visible={isModalVisible}
+              onCancel={() => setIsModalVisible(false)}
+              footer={null}
+            >
+              <Form
+                form={form}
+                name="create_post"
+                initialValues={{
+                  id: post.id,
+                  user_id: post.user_id,
+                  title: post.title,
+                  body: post.body,
+                }}
+                onFinish={onFinish}
+              >
+                <Form.Item
+                  name="title"
+                  label="Title"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <Input placeholder="Enter title" />
+                </Form.Item>
+                <Form.Item
+                  name="body"
+                  label="Post body"
+                  rules={[
+                    {
+                      required: true,
+                    },
+                  ]}
+                >
+                  <TextArea />
+                </Form.Item>
+                <Form.Item>
+                  <Button type="primary" htmlType="submit">
+                    Edit post
+                  </Button>
+                </Form.Item>
+              </Form>
+            </Modal>
           </Card>
-
-          {comments.map((comment) => (
-            <Comment key={comment.id} {...comment} />
-          ))}
+          <PostComments postId={params.id} />
         </>
       )}
     </PageTemplate>
@@ -72,17 +166,3 @@ const PostPage = ({ match: { params }, location, history }) => {
 };
 
 export default withRouter(PostPage);
-
-const Comment = ({ body, id, email, name }) => {
-  return (
-    <Card
-      title={name}
-      style={{
-        width: '60%',
-        margin: '30px auto',
-      }}
-    >
-      <p>{body}</p>
-    </Card>
-  );
-};

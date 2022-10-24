@@ -9,6 +9,7 @@ import CreateUserPage from './pages/CreateUserPage/CreateUserPage';
 import PostsPage from './pages/PostsPage/PostsPage';
 import PostPage from './pages/PostPage/PostPage';
 import CreatePostPage from './pages/CreatePostPage/CreatePostPage';
+import TodosPage from './pages/TodosPage/TodosPage';
 
 function App() {
   return (
@@ -22,6 +23,7 @@ function App() {
         <Route exact path="/posts" component={PostsPage} />
         <Route exact path="/posts/:id" component={PostPage} />
         <Route exact path="/createPost" component={CreatePostPage} />
+        <Route exact path="/todos" component={TodosPage} />
       </Switch>
     </>
   );

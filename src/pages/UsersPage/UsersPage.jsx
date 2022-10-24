@@ -1,116 +1,66 @@
 import React, { useEffect, useState } from 'react';
-import { Typography } from 'antd';
-import { Table } from 'antd';
-import PageTemplate from '../../components/PageTemplate/PageTemplate';
-import axios from '../../axios/index';
 import { withRouter } from 'react-router-dom';
-import Loader from '../../components/Loader/Loader';
+import { Typography, notification } from 'antd';
+import { WarningOutlined } from '@ant-design/icons';
+import axios from '../../axios/index';
 
-const UsersPage = ({ match, location, history }) => {
-  const usersURL = 'https://gorest.co.in/public/v1/users';
+import PageTemplate from '../../components/PageTemplate/PageTemplate';
+import UsersTable from './UsersTable';
+// import UsersTable from '../../components/UsersTable/UsersTable';
+
+const UsersPage = ({ history, location }) => {
+  const searchParams = new URLSearchParams(location.search);
+
+  const currentPage = parseInt(searchParams.get('page') || '1', 10);
   const [users, setUsers] = useState([]);
-  const [paginationInfo, setPaginationInfo] = useState([]);
-  const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [pages, setPages] = useState(0);
+  const [total, setTotal] = useState(0);
 
-  useEffect(() => {
-    fetchUsers(page);
-  }, [page]);
+  // const openNotification = (error) => {
+  //   notification.open({
+  //     message: 'Error!',
+  //     description: error.message,
+  //     icon: <WarningOutlined style={{ color: 'red' }} />,
+  //   });
+  // };
 
-  const fetchUsers = async (page) => {
+  // // const { response, isLoading, refetch } = useQueryUsers(
+  // // 	currentPage,
+  // // 	openNotification
+  // // );
+
+  if (pages && (currentPage > pages || currentPage < 1)) {
+    notification.open({
+      message: 'Warning!',
+      description: 'The page number was entered incorrectly. Please change it.',
+      icon: <WarningOutlined style={{ color: '#ffd800' }} />,
+    });
+  }
+
+  const fetchUsers = async () => {
     setIsLoading(true);
-    const allUsers = await axios.get(
-      usersURL + `${page !== 1 ? `?page=${page}` : ''}`
-    );
-    setUsers(allUsers.data.data);
-    setPaginationInfo(allUsers.data.meta.pagination);
+    const response = await axios.get(`/users?page=${currentPage}`);
+    setUsers(response.data.data);
+    setTotal(response.data.meta.pagination.total);
+    setPages(response.data.meta.pagination.pages);
     setIsLoading(false);
   };
 
-  const usersKey = users.map((user) => ({
-    ...user,
-    key: user.id,
-  }));
-
-  const columns = [
-    {
-      title: 'Name',
-      dataIndex: 'name',
-    },
-    {
-      title: 'email',
-      dataIndex: 'email',
-    },
-    {
-      title: 'Gender',
-      dataIndex: 'gender',
-      filters: [
-        {
-          text: 'male',
-          value: 'male',
-        },
-        {
-          text: 'female',
-          value: 'female',
-        },
-      ],
-      onFilter: (value, record) => record.gender.indexOf(value) === 0,
-    },
-    {
-      title: 'Status',
-      dataIndex: 'status',
-      filters: [
-        {
-          text: 'active',
-          value: 'active',
-        },
-        {
-          text: 'inactive',
-          value: 'inactive',
-        },
-      ],
-      onFilter: (value, record) => record.status.indexOf(value) === 0,
-    },
-  ];
-
-  const pagination = {
-    current: paginationInfo.page,
-    total: paginationInfo.total,
-    defaultPageSize: paginationInfo.limit,
-    position: ['bottomCenter'],
-    showSizeChanger: false,
-  };
-
-  const onChange = (pagination, filters, sorter, extra) => {
-    // console.log('params', pagination, filters, sorter, extra);
-    setPage(pagination.current);
-    // history.push({
-    //   pathname: location.pathname,
-    //   search: `page=${pagination.current}`,
-    // });
-  };
-
-  const sumbitRow = (record, rowIndex) => {
-    return {
-      onClick: () => history.push(match.path + `/${record.id}`),
-    };
-  };
+  useEffect(() => {
+    fetchUsers();
+  }, [currentPage]); // eslint-disable-line
 
   return (
     <PageTemplate>
-      <Typography.Title>Users Page</Typography.Title>
+      <Typography.Title>Users</Typography.Title>
 
-      {isLoading ? (
-        <Loader />
-      ) : (
-        <Table
-          columns={columns}
-          dataSource={usersKey}
-          onChange={onChange}
-          pagination={pagination}
-          onRow={sumbitRow}
-        />
-      )}
+      <UsersTable
+        users={users}
+        total={total}
+        isLoading={isLoading}
+        currentPage={currentPage}
+      />
     </PageTemplate>
   );
 };

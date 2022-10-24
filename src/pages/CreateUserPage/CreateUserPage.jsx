@@ -6,25 +6,25 @@ import { useHistory } from 'react-router-dom';
 import { WarningOutlined } from '@ant-design/icons';
 
 const CreateUserPage = () => {
-
   const [form] = Form.useForm();
   const history = useHistory();
 
   const onFinish = async (newUser) => {
     try {
-      await axios.post('', newUser);
+      await axios.post('/users/', newUser);
       history.push('/users');
       openNotification();
     } catch (error) {
       openNotification(error);
     }
-  }
+  };
 
   const openNotification = (errText) => {
     notification.open({
       message: errText ? `Error` : 'Success',
-      description:
-      errText ? `Request status: failed. ${errText}` : 'User created successfully',
+      description: errText
+        ? `Request status: failed. ${errText}`
+        : 'User created successfully',
       icon: (
         <WarningOutlined
           style={{
@@ -35,15 +35,13 @@ const CreateUserPage = () => {
     });
   };
 
-
   return (
     <PageTemplate>
-
       <Typography.Title>Create User Page</Typography.Title>
 
-      <Form 
-        form={form}  
-        name="create_user" 
+      <Form
+        form={form}
+        name="create_user"
         // initialValues={user}
         onFinish={onFinish}
       >
@@ -56,7 +54,7 @@ const CreateUserPage = () => {
             },
           ]}
         >
-          <Input placeholder='Enter name' />
+          <Input placeholder="Enter name" />
         </Form.Item>
         <Form.Item
           name="email"
@@ -72,7 +70,7 @@ const CreateUserPage = () => {
             },
           ]}
         >
-          <Input placeholder='Enter email' />
+          <Input placeholder="Enter email" />
         </Form.Item>
         <Form.Item
           name="gender"
@@ -83,9 +81,7 @@ const CreateUserPage = () => {
             },
           ]}
         >
-          <Select
-            placeholder="Select gender"
-          >
+          <Select placeholder="Select gender">
             <Select.Option value="male">Male</Select.Option>
             <Select.Option value="female">Female</Select.Option>
           </Select>
@@ -99,9 +95,7 @@ const CreateUserPage = () => {
             },
           ]}
         >
-          <Select
-            placeholder="Select status"
-          >
+          <Select placeholder="Select status">
             <Select.Option value="active">Active</Select.Option>
             <Select.Option value="inactive">Inactive</Select.Option>
           </Select>
@@ -112,9 +106,8 @@ const CreateUserPage = () => {
           </Button>
         </Form.Item>
       </Form>
-
     </PageTemplate>
-  )
-}
+  );
+};
 
-export default CreateUserPage
+export default CreateUserPage;

@@ -11,27 +11,10 @@ const Menu = ({ location }) => {
     { label: <Link to="/createUser">Create User</Link>, key: '/createUser' },
     { label: <Link to="/posts">Posts</Link>, key: '/posts' },
     { label: <Link to="/createPost">Create Post</Link>, key: '/createPost' },
+    { label: <Link to="/todos">Todos</Link>, key: '/todos' },
   ];
 
   return (
-    // <MenuAntd mode="horizontal" defaultSelectedKeys={[defaultKey]} theme="dark">
-    //   <MenuAntd.Item key="/">
-    //     <Link to="/">Home</Link>
-    //   </MenuAntd.Item>
-    //   <MenuAntd.Item key="/users">
-    //     <Link to="/users">Users</Link>
-    //   </MenuAntd.Item>
-    //   <MenuAntd.Item key="/createUser">
-    //     <Link to="/createUser">Create User</Link>
-    //   </MenuAntd.Item>
-    //   <MenuAntd.Item key="/posts">
-    //     <Link to="/posts">Posts</Link>
-    //   </MenuAntd.Item>
-    //   <MenuAntd.Item key="/createPost">
-    //     <Link to="/createPost">Create Post</Link>
-    //   </MenuAntd.Item>
-    // </MenuAntd>
-
     <MenuAntd
       items={items}
       mode="horizontal"
